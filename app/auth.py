@@ -102,7 +102,7 @@ def register():
             number = hex(random.getrandbits(512))[2:]
 
             db.execute(
-                QUERY,
+                'INSERT INTO activationlink (challenge, state, username, password, salt, email) VALUES(?,?,?,?,?,?);',
                 (number, utils.U_UNCONFIRMED, username, hashP, salt, email)
             )
             db.commit()
