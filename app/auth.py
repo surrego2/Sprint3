@@ -25,19 +25,19 @@ def activate():
         #Se usa el metodo para obtener datos
         if request.method == 'GET': 
             number = request.args['auth'] 
-            
+
             #Se usa la funcion get_db para traer la base de datos
             db = get_db()
             attempt = db.execute(
-                QUERY, (number, utils.U_UNCONFIRMED)
+                'SELECT id, username, password, salt, email FROM activationlink WHERE challenge=? AND state=?', (number, utils.U_UNCONFIRMED)
             ).fetchone()
 
             if attempt is not None:
                 db.execute(
-                    QUERY, (utils.U_CONFIRMED, attempt['id'])
+                    'UPDATE activationlink SET state = ? WHERE id =  ', (utils.U_CONFIRMED, attempt['id'])
                 )
                 db.execute(
-                    QUERY, (attempt['username'], attempt['password'], attempt['salt'], attempt['email'])
+                    'INSERT INTO user (username, password, salt, email) VALUES(?,?,?,?);', (attempt['username'], attempt['password'], attempt['salt'], attempt['email'])
                 )
                 db.commit()
 
