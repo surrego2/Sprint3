@@ -18,7 +18,7 @@ def getDB():
 def show():
     db = get_db()
     messages = db.execute(
-        QUERY
+        'SELECT * FROM message INNER JOIN user ON message.from_id = user.id WHERE to_id= ?', (g.user['id'],)
     ).fetchall()
 
     return render_template('inbox/send.html', messages=messages)
