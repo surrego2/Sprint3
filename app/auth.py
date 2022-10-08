@@ -29,12 +29,12 @@ def activate():
             #Se usa la funcion get_db para traer la base de datos
             db = get_db()
             attempt = db.execute(
-                'SELECT id, username, password, salt, email FROM activationlink WHERE challenge=? AND state=?', (number, utils.U_UNCONFIRMED)
+                'SELECT id, username, password, salt, email FROM activationlink WHERE challenge = ? AND state = ?', (number, utils.U_UNCONFIRMED)
             ).fetchone()
 
             if attempt is not None:
                 db.execute(
-                    'UPDATE activationlink SET state = ? WHERE id =  ', (utils.U_CONFIRMED, attempt['id'])
+                    'UPDATE activationlink SET state = ? WHERE id = ?', (utils.U_CONFIRMED, attempt['id'])
                 )
                 db.execute(
                     'INSERT INTO user (username, password, salt, email) VALUES(?,?,?,?);', (attempt['username'], attempt['password'], attempt['salt'], attempt['email'])
@@ -133,6 +133,7 @@ def confirm():
             password = request.form['password']
             password1 = request.form['password1']
             authid = request.form['authid']
+            print(authid)
 
             if not authid:
                 flash('Invalid')
@@ -225,11 +226,11 @@ def forgot():
                 number = hex(random.getrandbits(512))[2:]
                 
                 db.execute(
-                    QUERY,
+                    'UPDATE forgotlink SET state = ? WHERE userid = ?',
                     (utils.F_INACTIVE, user['id'])
                 )
                 db.execute(
-                    QUERY,
+                    'INSERT INTO forgotlink (userid, challenge, state) VALUES(?,?,?)',
                     (user['id'], number, utils.F_ACTIVE)
                 )
                 db.commit()
@@ -258,7 +259,7 @@ def login():
         if g.user:
             return redirect(url_for('inbox.show'))
 
-        if request.method == 'GET':
+        if request.method == 'POST':
             username = request.form['username']
             password = request.form['password']
 
@@ -266,7 +267,6 @@ def login():
                 error = 'Username Field Required'
                 flash(error)
                 return render_template('auth/login.html')
-
             if not password:
                 error = 'Password Field Required'
                 flash(error)
@@ -282,7 +282,6 @@ def login():
                 error = 'Incorrect username or password'
             elif not check_password_hash(user['password'], password + user['salt']):
                 error = 'Incorrect username or password'   
-
             if error is None:
                 session.clear()
                 session['user_id'] = user['id']
@@ -303,7 +302,7 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = get_db().execute(
-            'SELECT * FROM user WHERE user_id = ?', (user_id,)
+            'SELECT * FROM user WHERE id = ?', (user_id,)
         ).fetchone()
 
         
