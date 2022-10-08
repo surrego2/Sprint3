@@ -21,7 +21,7 @@ def show():
         'SELECT * FROM message INNER JOIN user ON message.from_id = user.id WHERE to_id= ?', (g.user['id'],)
     ).fetchall()
 
-    return render_template('inbox/send.html', messages=messages)
+    return render_template('inbox/show.html', messages=messages)
 
 
 @bp.route('/send', methods=('GET', 'POST'))
@@ -51,7 +51,7 @@ def send():
         userto = None 
         
         userto = db.execute(
-            QUERY, (to_username,)
+            'SELECT * FROM user WHERE username=?', (to_username,)
         ).fetchone()
         
         if userto is None:
@@ -62,7 +62,7 @@ def send():
         else:
             db = get_db()
             db.execute(
-                QUERY,
+                'INSERT INTO message (from_id, to_id, subject, body) VALUES(?,?,?,?)',
                 (g.user['id'], userto['id'], subject, body)
             )
             db.commit()

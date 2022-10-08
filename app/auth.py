@@ -200,7 +200,7 @@ def change():
         
         return render_template('auth/forgot.html')
     except:
-        return render_template(TEMP)
+        return render_template('auth/forgot.html')
 
 
 @bp.route('/forgot', methods=('GET', 'POST'))
@@ -250,7 +250,7 @@ def forgot():
 
         return render_template('auth/forgot.html')
     except:
-        return render_template(TEMP)
+        return render_template('auth/forgot.html')
 
 
 @bp.route('/login', methods=('GET', 'POST'))
@@ -308,7 +308,7 @@ def load_logged_in_user():
         
 @bp.route('/logout')
 def logout():
-    session.clear
+    session.clear()
     return redirect(url_for('auth.login'))
 
 
