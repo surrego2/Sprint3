@@ -40,7 +40,7 @@ def activate():
                     'INSERT INTO user (username, password, salt, email) VALUES(?,?,?,?);', (attempt['username'], attempt['password'], attempt['salt'], attempt['email'])
                 )
                 db.commit()
-
+        print('NOS VA A MANDAR A LOGIN')
         return redirect(url_for('auth.login'))
     except Exception as e:
         print(e)
@@ -158,17 +158,17 @@ def confirm():
 
             db = get_db()
             attempt = db.execute(
-                QUERY, (authid, utils.F_ACTIVE)
+                'SELECT * FROM forgotlink WHERE challenge = ? AND state = ?', (authid, utils.F_ACTIVE)
             ).fetchone()
             
             if attempt is not None:
                 db.execute(
-                    QUERY, (utils.F_INACTIVE, attempt['id'])
+                    'UPDATE forgotlink SET state = ? WHERE id = ?', (utils.F_INACTIVE, attempt['id'])
                 )
                 salt = hex(random.getrandbits(128))[2:]
                 hashP = generate_password_hash(password + salt)   
                 db.execute(
-                    QUERY, (hashP, salt, attempt['userid'])
+                    'UPDATE user SET password = ?, salt = ? WHERE id = ?', (hashP, salt, attempt['userid'])
                 )
                 db.commit()
                 return redirect(url_for('auth.login'))
@@ -192,7 +192,7 @@ def change():
             
             db = get_db()
             attempt = db.execute(
-                QUERY, (number, utils.F_ACTIVE)
+                'SELECT * FROM forgotlink WHERE challenge = ? AND state = ?', (number, utils.F_ACTIVE)
             ).fetchone()
             
             if attempt is not None:
@@ -255,9 +255,12 @@ def forgot():
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
+    print('ESTOY EN LOGIN')
     try:
         if g.user:
+            print('ESTOY LOGEADO CON USER')
             return redirect(url_for('inbox.show'))
+        print('NO ESTOY LOGEADO CON USER')
 
         if request.method == 'POST':
             username = request.form['username']
